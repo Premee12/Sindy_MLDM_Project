@@ -1,0 +1,173 @@
+\documentclass[aspectratio=169]{beamer}
+\usetheme{Madrid}
+\usecolortheme{whale}
+
+% Packages
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{amsmath}
+\usepackage{xcolor}
+
+% Custom colors
+\definecolor{alertred}{RGB}{220,53,69}
+\definecolor{successgreen}{RGB}{40,167,69}
+\definecolor{infocolor}{RGB}{23,162,184}
+
+% Title
+\title[PDE Discovery]{PDE Discovery: Benchmark Analysis \& Findings}
+\author{Research Presentation}
+\date{January 2026}
+
+\begin{document}
+
+%===============================================
+% SLIDE 1: Stage 3 Benchmark - The Problem
+%===============================================
+\begin{frame}{Stage-3 Benchmark: Why Optical Flow Failed}
+
+\begin{columns}[T]
+    \begin{column}{0.48\textwidth}
+        \begin{block}{Last Week: Optical Flow}
+            Compensate camera motion via dense optical flow before SINDy.
+        \end{block}
+        
+        \begin{alertblock}{Why It Failed}
+            \begin{itemize}
+                \item Subpixel errors accumulate
+                \item Flow estimation adds noise
+                \item Derivatives amplify errors
+                \item Error: $6 \rightarrow 26{,}867$
+            \end{itemize}
+        \end{alertblock}
+    \end{column}
+    
+    \begin{column}{0.50\textwidth}
+        \begin{exampleblock}{Solution: DMD Denoising}
+            Dynamic Mode Decomposition filters noise while preserving dynamics.
+            
+            \vspace{0.3cm}
+            \textbf{Result:} 268$\times$ error reduction on shifted data.
+        \end{exampleblock}
+    \end{column}
+\end{columns}
+
+\end{frame}
+
+%===============================================
+% SLIDE 2: Shifted Data - DMD Advantage
+%===============================================
+\begin{frame}{Research Phase 2: Shifted Data Reveals DMD Advantage}
+
+\begin{columns}[T]
+    \begin{column}{0.35\textwidth}
+        \begin{block}{Shifted Data (N1\_shifts)}
+            \begin{tabular}{lc}
+                \toprule
+                \textbf{Method} & \textbf{Error} \\
+                \midrule
+                \textcolor{alertred}{Baseline} & \textcolor{alertred}{26,867} \\
+                Weak\_form & 111,912 \\
+                \midrule
+                \textcolor{successgreen}{DMD\_opt} & \textcolor{successgreen}{\textbf{100}} \\
+                DMD\_fourier & 139 \\
+                Multiscale\_DMD & 148 \\
+                \bottomrule
+            \end{tabular}
+            
+            \vspace{0.3cm}
+            \textcolor{infocolor}{\textbf{DMD: 268$\times$ better}}
+        \end{block}
+    \end{column}
+    
+    \begin{column}{0.63\textwidth}
+        \centering
+        \includegraphics[width=\textwidth,height=6.5cm,keepaspectratio]{results_comparison.png}
+        
+        \vspace{0.1cm}
+        {\small DMD methods consistently outperform traditional approaches}
+    \end{column}
+\end{columns}
+
+\end{frame}
+
+%===============================================
+% SLIDE 3: Overall Results - Performance Heatmap
+%===============================================
+\begin{frame}{Research Phase 3: Overall Results \& Next Steps}
+
+\begin{columns}[T]
+    \begin{column}{0.32\textwidth}
+        \begin{block}{Summary: Best Methods}
+            \begin{tabular}{lcc}
+                \toprule
+                \textbf{Data} & \textbf{DMD} & \textbf{Gain} \\
+                \midrule
+                Clean & 0.15 & 40$\times$ \\
+                Shift & 100 & 268$\times$ \\
+                Noise & 41 & 161$\times$ \\
+                Both & 68 & \textbf{294$\times$} \\
+                \bottomrule
+            \end{tabular}
+        \end{block}
+        
+        \begin{exampleblock}{Key Findings}
+            \begin{itemize}
+                \item DMD \textbf{consistently} wins
+                \item Best on combined noise
+                \item Ready for real images
+            \end{itemize}
+        \end{exampleblock}
+    \end{column}
+    
+    \begin{column}{0.66\textwidth}
+        \centering
+        \includegraphics[width=\textwidth,height=6.5cm,keepaspectratio]{benchmark_heatmap.png}
+    \end{column}
+\end{columns}
+
+\end{frame}
+
+%===============================================
+% SLIDE 4: Real Images - The Challenge
+%===============================================
+\begin{frame}{Real Images: Best Method Still Fails}
+
+\begin{columns}[T]
+    \begin{column}{0.48\textwidth}
+        \begin{block}{Applied Best Method on Real Data}
+            \begin{itemize}
+                \item 51 frames, 2052$\times$2560 pixels
+                \item DMD denoising (rank=30)
+                \item STRidge discovery
+            \end{itemize}
+        \end{block}
+        
+        \begin{alertblock}{Discovered "Equation"}
+            $u_t = \textcolor{alertred}{-0.26u} + 0.44u^2 + 0.05u_y$
+            
+            \vspace{0.2cm}
+            \textbf{R² = 0.052} \textcolor{alertred}{(only 5\%!)}
+        \end{alertblock}
+    \end{column}
+    
+    \begin{column}{0.50\textwidth}
+        \begin{exampleblock}{Analysis}
+            Even with \textbf{best synthetic performance} (100\% error on shifted data), real images yield \textbf{physically meaningless} PDE.
+            
+            \vspace{0.3cm}
+            \textbf{Root causes:}
+            \begin{itemize}
+                \item Unknown ground truth
+                \item Complex noise patterns
+                \item Non-stationary dynamics
+            \end{itemize}
+        \end{exampleblock}
+        
+        \vspace{0.2cm}
+        \textcolor{infocolor}{\textbf{Conclusion:} Need advanced methods}
+    \end{column}
+\end{columns}
+
+\end{frame}
+
+\end{document}
